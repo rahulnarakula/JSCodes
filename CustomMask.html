@@ -6,11 +6,12 @@
   <title>JS Bin</title>
 </head>
 <body>
+    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
 <script>
-
-applyMask("ssn", "hid-ssn", "000-00-1111")
-applyMask("paDhsId", "hid-paDhsId", "0000001111")
-
+$(document).ready(function(){
+applyMask("ssn", "hid-ssn", "000-00-1111");
+applyMask("paDhsId", "hid-paDhsId", "0000001111");
+});
 function applyMask(id, hiddenId, mask) {
     var element = "#" + id;
     var hidden = "#" + hiddenId;
@@ -63,7 +64,6 @@ function applyMask(id, hiddenId, mask) {
     })
 }
 </script>
-<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
 SSN: <input id="ssn" type="text" placeholder="xxx-xx-xxxx"/>
  <input id="hid-ssn" type="text"/>
   <hr />
