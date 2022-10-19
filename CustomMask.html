@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+</head>
+<body>
+<script>
+
+applyMask("ssn", "hid-ssn", "000-00-1111")
+applyMask("paDhsId", "hid-paDhsId", "0000001111")
+
+function applyMask(id, hiddenId, mask) {
+    var element = "#" + id;
+    var hidden = "#" + hiddenId;
+    var numPadStartKeyCode = 96;
+    var numPadEndKeyCode = 105;
+
+    function isNumPadKey(key) {
+        return key >= numPadStartKeyCode && key <= numPadEndKeyCode;
+    }
+    $(element).on('keydown', (e) => {
+        var key = e.keyCode;
+        var maskLen = mask.length;
+        var arr = mask.split('-');
+        var hyphenCount = arr.length - 1;
+        var ch = isNumPadKey(key) ? (key - numPadStartKeyCode).toString() : String.fromCharCode(key);
+        var hidVal = $(hidden).val();
+        var hidLen = hidVal.length;
+        if (e.keyCode === 8) {
+            if (hidLen > 0) {
+                hidVal = hidVal.substring(0, hidLen - 1);
+                hidLen--;
+                $(hidden).val(hidVal);
+            }
+        } else if (isNaN(ch) || hidLen === maskLen - hyphenCount) {
+            return false;
+        } else {
+            $(hidden).val(hidVal + ch.toString());
+            hidVal = $(hidden).val();
+            hidLen = hidVal.length;
+        }
+
+        var maskedValue = "";
+        var i = 0,
+            mi = 0;
+        while (i < hidLen && mi < maskLen) {
+            var mCh = mask[mi];
+            if (mCh === "0") {
+                maskedValue += "X";
+                i++;
+            } else if (mCh === "1") {
+                maskedValue += hidVal[i];
+                i++;
+            } else {
+                maskedValue += "-";
+            }
+            mi++;
+        }
+        $(element).val(maskedValue);
+        return false;
+    })
+}
+</script>
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+SSN: <input id="ssn" type="text" placeholder="xxx-xx-xxxx"/>
+ <input id="hid-ssn" type="text"/>
+  <hr />
+  <hr />
+  PADHSID: <input id="paDhsId" type="text" placeholder="xxxxxxxxx"/>
+ <input id="hid-paDhsId" type="text"/>
+</body>
+</html>
