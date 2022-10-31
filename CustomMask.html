@@ -9,59 +9,63 @@
     <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
 <script>
 $(document).ready(function(){
-applyMask("ssn", "hid-ssn", "000-00-1111");
-applyMask("paDhsId", "hid-paDhsId", "0000001111");
+customMask.applyMask("ssn", "hid-ssn", "000-00-1111");
+customMask.applyMask("paDhsId", "hid-paDhsId", "0000001111");
 });
-function applyMask(id, hiddenId, mask) {
-    var element = "#" + id;
-    var hidden = "#" + hiddenId;
-    var numPadStartKeyCode = 96;
-    var numPadEndKeyCode = 105;
 
-    function isNumPadKey(key) {
-        return key >= numPadStartKeyCode && key <= numPadEndKeyCode;
-    }
-    $(element).on('keydown', (e) => {
-        var key = e.keyCode;
-        var maskLen = mask.length;
-        var arr = mask.split('-');
-        var hyphenCount = arr.length - 1;
-        var ch = isNumPadKey(key) ? (key - numPadStartKeyCode).toString() : String.fromCharCode(key);
-        var hidVal = $(hidden).val();
-        var hidLen = hidVal.length;
-        if (e.keyCode === 8) {
-            if (hidLen > 0) {
-                hidVal = hidVal.substring(0, hidLen - 1);
-                hidLen--;
+
+var customMask = {
+    applyMask: function (id, hiddenId, mask) {
+        document.getElementById(id).onpaste = e => e.preventDefault();
+        var element = "#" + id;
+        var hidden = "#" + hiddenId;
+        $(element).on('input', (e) => {
+            var maskLen = mask.length;
+            var hidVal = $(hidden).val();
+            var oldMaskedValue = customMask.getMaskedValue(hidVal, mask);
+            var currentVal = $(element).val();
+            var elLenDiff = currentVal.length - oldMaskedValue.length;
+            if (elLenDiff > 0) {
+                var newPart = currentVal.substr(oldMaskedValue.length);
+                if (isOnlyDigits(newPart) && oldMaskedValue.length < maskLen) {
+                    $(hidden).val(hidVal + newPart);
+                    hidVal = $(hidden).val();
+                }
+            } else if (elLenDiff < 0) {
+                var removedPart = oldMaskedValue.substr(currentVal.length);
+                var removedCharactersCount = removedPart.split('-').length;
+                hidVal = hidVal.slice(0, -1 * removedCharactersCount);
                 $(hidden).val(hidVal);
             }
-        } else if (isNaN(ch) || hidLen === maskLen - hyphenCount) {
-            return false;
-        } else {
-            $(hidden).val(hidVal + ch.toString());
-            hidVal = $(hidden).val();
-            hidLen = hidVal.length;
-        }
-
+            $(element).val(customMask.getMaskedValue(hidVal, mask));
+            setTimeout(() => document.getElementById(id).setSelectionRange(100, 100), 1);
+        });
+    },
+    getMaskedValue: function (originalValue, mask) {
         var maskedValue = "";
+
         var i = 0,
             mi = 0;
-        while (i < hidLen && mi < maskLen) {
+        while (i < originalValue.length && mi < mask.length) {
             var mCh = mask[mi];
             if (mCh === "0") {
                 maskedValue += "X";
                 i++;
             } else if (mCh === "1") {
-                maskedValue += hidVal[i];
+                maskedValue += originalValue[i];
                 i++;
             } else {
                 maskedValue += "-";
             }
             mi++;
         }
-        $(element).val(maskedValue);
-        return false;
-    })
+
+        return maskedValue;
+    }
+}
+
+function isOnlyDigits(val) {
+    return /^\d+$/.test(val);
 }
 </script>
 SSN: <input id="ssn" type="text" placeholder="xxx-xx-xxxx"/>
